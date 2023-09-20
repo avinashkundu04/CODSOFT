@@ -1,4 +1,7 @@
-import java.util.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 class BankAccount {
     private double balance;
@@ -14,84 +17,111 @@ class BankAccount {
     public void deposit(double amount) {
         if (amount > 0) {
             balance += amount;
-            System.out.println("Deposit successful. New balance: $" + balance);
-        } else {
-            System.out.println("Invalid deposit amount!");
         }
     }
 
-    public void withdraw(double amount) {
+    public boolean withdraw(double amount) {
         if (amount > 0 && amount <= balance) {
             balance -= amount;
-            System.out.println("Withdrawal successful. New balance: $" + balance);
-        } else {
-            System.out.println("Invalid withdrawal amount or insufficient balance.");
+            return true;
         }
+        return false;
     }
 }
 
-class ATM {
-    private BankAccount userAccount;
+public class TASK_4{
+    private BankAccount bankAccount;
+    private JFrame frame;
+    private JTextField amountField;
+    private JTextArea displayArea;
 
-    public ATM(BankAccount account) {
-        userAccount = account;
-    }
+    public TASK_4(BankAccount account) {
+        bankAccount = account;
+        frame = new JFrame("ATM Machine");
+        frame.setSize(300, 200);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-    public void checkBalance() {
-        System.out.println("Current balance: $" + userAccount.getBalance());
-    }
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(3, 2));
 
-    public void deposit(double amount) {
-        userAccount.deposit(amount);
-    }
+        JLabel amountLabel = new JLabel("Enter Amount:");
+        amountField = new JTextField();
+        JButton withdrawButton = new JButton("Withdraw");
+        JButton depositButton = new JButton("Deposit");
+        JButton balanceButton = new JButton("Check Balance");
+        displayArea = new JTextArea();
 
-    public void withdraw(double amount) {
-        userAccount.withdraw(amount);
-    }
-}
+        panel.add(amountLabel);
+        panel.add(amountField);
+        panel.add(withdrawButton);
+        panel.add(depositButton);
+        panel.add(balanceButton);
 
-public class TASK_4 {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        frame.add(panel, BorderLayout.NORTH);
+        frame.add(displayArea, BorderLayout.CENTER);
 
-        System.out.print("Enter initial balance: $");
-        double initialBalance = scanner.nextDouble();
-        BankAccount userAccount = new BankAccount(initialBalance);
-
-        ATM atm = new ATM(userAccount);
-
-        while (true) {
-            System.out.println("\nATM Menu:");
-            System.out.println("1. Check Balance");
-            System.out.println("2. Deposit");
-            System.out.println("3. Withdraw");
-            System.out.println("4. Exit");
-            System.out.print("Enter your choice: ");
-
-            int choice = scanner.nextInt();
-
-            switch (choice) {
-                case 1:
-                    atm.checkBalance();
-                    break;
-                case 2:
-                    System.out.print("Enter deposit amount: $");
-                    double depositAmount = scanner.nextDouble();
-                    atm.deposit(depositAmount);
-                    break;
-                case 3:
-                    System.out.print("Enter withdrawal amount: $");
-                    double withdrawalAmount = scanner.nextDouble();
-                    atm.withdraw(withdrawalAmount);
-                    break;
-                case 4:
-                    System.out.println("Exit the ATM. Have a Good day!");
-                    scanner.close();
-                    System.exit(0);
-                default:
-                    System.out.println("Invalid choice!! Please try again.");
+        withdrawButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                withdraw();
             }
+        });
+
+        depositButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                deposit();
+            }
+        });
+
+        balanceButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                checkBalance();
+            }
+        });
+
+        frame.setVisible(true);
+    }
+
+    private void withdraw() {
+        try {
+            double amount = Double.parseDouble(amountField.getText());
+            if (bankAccount.withdraw(amount)) {
+                displayMessage("Withdrawal of $" + amount + " successful.");
+            } else {
+                displayMessage("Withdrawal failed. Insufficient balance or invalid amount.");
+            }
+        } catch (NumberFormatException ex) {
+            displayMessage("Invalid input. Please enter a valid amount.");
         }
+        clearInputField();
+    }
+
+    private void deposit() {
+        try {
+            double amount = Double.parseDouble(amountField.getText());
+            bankAccount.deposit(amount);
+            displayMessage("Deposit of $" + amount + " successful.");
+        } catch (NumberFormatException ex) {
+            displayMessage("Invalid input. Please enter a valid amount.");
+        }
+        clearInputField();
+    }
+
+    private void checkBalance() {
+        double balance = bankAccount.getBalance();
+        displayMessage("Your account balance is: $" + balance);
+        clearInputField();
+    }
+
+    private void displayMessage(String message) {
+        displayArea.append(message + "\n");
+    }
+
+    private void clearInputField() {
+        amountField.setText("");
+    }
+
+    public static void main(String[] args) {
+        BankAccount userAccount = new BankAccount(1000.0); // Initial balance of $1000
+        SwingUtilities.invokeLater(() -> new TASK_4(userAccount));
     }
 }
-
